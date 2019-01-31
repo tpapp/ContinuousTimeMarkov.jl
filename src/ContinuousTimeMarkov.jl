@@ -49,6 +49,7 @@ struct TransitionRateMatrix{T, S <: AbstractMatrix} <: AbstractMatrix{T}
     # 2. its rows sum to `0`,
     # 3. it will not be modified later (ie does not share structure).
     function TransitionRateMatrix(::Val{:trust}, matrix::S) where {T, S <: AbstractMatrix{T}}
+        @argcheck !Base.has_offset_axes(matrix)
         new{T, S}(matrix)
     end
 end
@@ -79,7 +80,7 @@ end
 
 function stationary_distribution(m::TransitionRateMatrix)
     @unpack matrix = m
-    LU = lu(matrix, Val(false); check = false) # not pivoted, singular
+    LU = lu(matrix, Val(false); check = false) # not pivoted, allow singular
     L = LU.L
     x = vcat(L[1:(end-1), 1:(end-1)]' \ -L[end, 1:(end-1)], 1)
     normalize!(x, 1)
