@@ -1,7 +1,8 @@
 module ContinuousTimeMarkov
 
-export TransitionRateMatrix, stationary_distribution
+export TransitionRateMatrix, TransitionRateMatrix!, stationary_distribution
 
+using AlgebraResultTypes: result_ring
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES
 using Parameters: @unpack
@@ -9,38 +10,86 @@ using LinearAlgebra: Diagonal, lu, normalize!
 using SparseArrays: rowvals, nonzeros, nzrange, SparseMatrixCSC
 
 ####
-#### Transition rate matrices
+#### utilities
 ####
 
 """
 $(SIGNATURES)
 
-Return true iff off-diagonal elements of `A` are `≥ 0`.
+Assert that both axes are the same, and return a single one.
 
-Used internally, not exported.
+Internal, not part of the API. Works with generalized indexing.
 """
-function is_nonnegative_offdiagonal(A::SparseMatrixCSC)
+function checked_square_axis(A::AbstractMatrix)
+    a1, a2 = axes(A)
+    @argcheck a1 == a2 "Mismatching axes for matrix."
+    a1
+end
+
+"""
+$(SIGNATURES)
+
+Check that off-diagonal elements are nonnegative, and return their sum by row.
+
+Internal, not part of the API. Works with generalized indexing.
+"""
+function off_diagonal_checked_row_sum(A::AbstractMatrix{T}) where {T}
+    _off_diagonal_checked_row_sum!(zeros(result_ring(T), checked_square_axis(A)), A)
+end
+
+"""
+$(SIGNATURES)
+
+Accumulate the sum of off-diagonal elements into `d` by row. Return `d`.
+
+Internal, not part of the API. Works with generalized indexing.
+"""
+function _off_diagonal_checked_row_sum!(d, A::AbstractMatrix)
+    @inbounds for ι in CartesianIndices(A)
+        if ι[1] ≠ ι[2]
+            a = A[ι]
+            @argcheck a ≥ 0 DomainError(a, "Element at $(ι) is negative.")
+            d[ι[1]] += a
+        end
+    end
+    d
+end
+
+function _off_diagonal_checked_row_sum!(d, A::SparseMatrixCSC)
     rows = rowvals(A)
     vals = nonzeros(A)
     m, n = size(A)
-    for i in 1:n
-        for j in nzrange(A, i)
-            rows[j] ≠ i && vals[j] < 0 && return false
+    for j in 1:n
+        for k in nzrange(A, j)
+            i = rows[k]
+            if i ≠ j
+                a = vals[k]
+                @argcheck a ≥ 0 DomainError(a, "Element at $(CartesianIndex(i,j)) is negative.")
+                d[i] += a
+            end
         end
     end
-    true
+    d
 end
 
-function is_nonnegative_offdiagonal(A::AbstractMatrix)
-    for j in axes(A, 2)
-        for i in axes(A, 1)     # column-major traversal
-            i ≠ j && A[i, j] < 0 && return false
-        end
+"""
+$(SIGNATURES)
+
+Set the diagonal of the argument (which is modified) so that rows sum to `0`.
+
+Internal, not part of the API. Works with generalized indexing.
+"""
+function normalize_diagonal!(A::AbstractMatrix)
+    d = off_diagonal_checked_row_sum(A)
+    @inbounds for i in checked_square_axis(A)
+        A[i, i] = -d[i]
     end
-    true
+    A
 end
 
-is_square_matrix(A::AbstractMatrix) = axes(A, 1) == axes(A, 2)
+####
+#### Transition rate matrices
+####
 
 struct TransitionRateMatrix{T, S <: AbstractMatrix} <: AbstractMatrix{T}
     matrix::S
@@ -49,7 +98,7 @@ struct TransitionRateMatrix{T, S <: AbstractMatrix} <: AbstractMatrix{T}
     # 2. its rows sum to `0`,
     # 3. it will not be modified later (ie does not share structure).
     function TransitionRateMatrix(::Val{:trust}, matrix::S) where {T, S <: AbstractMatrix{T}}
-        @argcheck !Base.has_offset_axes(matrix)
+        checked_square_axis(matrix)
         new{T, S}(matrix)
     end
 end
@@ -63,23 +112,32 @@ Base.IndexStyle(::Type{TransitionRateMatrix{T,S}}) where {T,S} = IndexStyle(S)
 """
 $(SIGNATURES)
 
-Create a transition rate matrix from the argument. This makes a copy and sets the diagonal
-so that rows sum to `0`, striving to preserve sparsity and structure.
-
-When the argument is already a transition rate matrix (all non-diagonal elements
-nonnegative, rows sum to `0`), use
-```julia
-TransitionRateMatrix(Val(:trust), matrix)
-```
+Create a transition rate matrix from the argument. This makes a copy, checks that
+off-diagonal elements are nonnegative, and sets the diagonal so that rows sum to `0`,
+striving to preserve sparsity and structure.
 """
-function TransitionRateMatrix(Q)
-    @argcheck is_square_matrix(Q)
-    @argcheck is_nonnegative_offdiagonal(Q)
-    TransitionRateMatrix(Val{:trust}(), Q - Diagonal(vec(sum(Q; dims = 2))))
+function TransitionRateMatrix(Q::AbstractMatrix)
+    TransitionRateMatrix(Val{:trust}(), normalize_diagonal!(copy(Q)))
 end
 
+"""
+$(SIGNATURES)
+
+Create a `TransitionRateMatrix` from a matrix `Q`. Modifies the argument (to normalize the
+diagonal).
+"""
+function TransitionRateMatrix!(Q::AbstractMatrix)
+    TransitionRateMatrix(Val{:trust}(), normalize_diagonal!(Q))
+end
+
+"""
+$(SIGNATURES)
+
+Return the stationary distribution of a transition rate matrix as a vector.
+"""
 function stationary_distribution(m::TransitionRateMatrix)
     @unpack matrix = m
+    @assert !Base.has_offset_axes(matrix) "Generalized indexing version not implemented."
     LU = lu(matrix, Val(false); check = false) # not pivoted, allow singular
     L = LU.L
     x = vcat(L[1:(end-1), 1:(end-1)]' \ -L[end, 1:(end-1)], 1)
