@@ -12,7 +12,7 @@ end
         # copying constructor
         Q = TransitionRateMatrix(A)
         @test size(Q) ≡ (n, n)
-        @test Base.IndexStyle(Q) ≡ Base.IndexStyle(A)
+        @test Base.IndexStyle(typeof(Q)) ≡ Base.IndexStyle(typeof(A))
         for i in axes(Q, 1)
             @test sum(Q[i, :]) ≈ 0 atol = n*10*eps()
         end
@@ -20,7 +20,7 @@ end
         # non-copying constructor
         Q2 = TransitionRateMatrix!(A)
         @test size(Q2) ≡ (n, n)
-        @test Base.IndexStyle(Q2) ≡ Base.IndexStyle(A)
+        @test Base.IndexStyle(typeof(Q2)) ≡ Base.IndexStyle(typeof(A))
         for i in axes(Q2, 1)
             @test sum(Q2[i, :]) ≈ 0 atol = n*10*eps()
         end
@@ -41,7 +41,7 @@ end
         # copying constructor
         Q = TransitionRateMatrix(A)
         @test size(Q) ≡ (n, n)
-        @test Base.IndexStyle(Q) ≡ Base.IndexStyle(A)
+        @test Base.IndexStyle(typeof(Q)) ≡ Base.IndexStyle(typeof(A))
         for i in axes(Q, 1)
             @test sum(Q[i, :]) ≈ 0 atol = n*10*eps()
         end
@@ -49,7 +49,7 @@ end
         # non-copying constructor
         Q2 = TransitionRateMatrix!(A)
         @test size(Q2) ≡ (n, n)
-        @test Base.IndexStyle(Q2) ≡ Base.IndexStyle(A)
+        @test Base.IndexStyle(typeof(Q2)) ≡ Base.IndexStyle(typeof(A))
         for i in axes(Q2, 1)
             @test sum(Q2[i, :]) ≈ 0 atol = n*10*eps()
         end
