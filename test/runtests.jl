@@ -9,11 +9,25 @@ end
     for i in 1:100
         n = 3
         A = abs.(randn(n, n))
+        # copying constructor
         Q = TransitionRateMatrix(A)
+        @test size(Q) ≡ (n, n)
+        @test Base.IndexStyle(Q) ≡ Base.IndexStyle(A)
         for i in axes(Q, 1)
             @test sum(Q[i, :]) ≈ 0 atol = 10*eps()
         end
+
+        # non-copying constructor
+        Q2 = TransitionRateMatrix!(A)
+        @test size(Q2) ≡ (n, n)
+        @test Base.IndexStyle(Q2) ≡ Base.IndexStyle(A)
+        for i in axes(Q2, 1)
+            @test sum(Q2[i, :]) ≈ 0 atol = 10*eps()
+        end
+
         π = stationary_distribution(Q)
+        π2 = stationary_distribution(Q2)
+        @test π == π2           # exact equivalence
         @test sum(π) ≈ 1
         @test all(π .≥ 0)
         @test Q'*π ≈ zero(π) atol = 10*eps()
