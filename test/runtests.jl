@@ -5,9 +5,9 @@ using ContinuousTimeMarkov, Test, LinearAlgebra, SparseArrays
     @test_throws DomainError TransitionRateMatrix(-ones(3, 3))   # negative
 end
 
-@testset "transition matrix creation" begin
+@testset "transition matrix creation (dense)" begin
     for i in 1:100
-        n = 3
+        n = rand(5:10)
         A = abs.(randn(n, n))
         # copying constructor
         Q = TransitionRateMatrix(A)
@@ -34,18 +34,34 @@ end
     end
 end
 
-# FIXME steady state for sparse matrices currently broken
-# @testset "transition matrix creation" begin
-#     for i in 1:100
-#         n = 3
-#         A = abs.(sprandn(n, n, 1/n))
-#         Q = TransitionRateMatrix(A)
-#         for i in axes(Q, 1)
-#             @test sum(Q[i, :]) ≈ 0 atol = 10*eps()
-#         end
-#         π = stationary_distribution(Q)
-#         @test sum(π) ≈ 1
-#         @test all(π .≥ 0)
-#         @test Q'*π ≈ zero(π) atol = 10*eps()
-#     end
-# end
+@testset "transition matrix creation (sparse)" begin
+    for i in 1:100
+        n = rand(5:10)
+        A = abs.(sprandn(n, n, 1/n))
+        # copying constructor
+        Q = TransitionRateMatrix(A)
+        @test size(Q) ≡ (n, n)
+        @test Base.IndexStyle(Q) ≡ Base.IndexStyle(A)
+        for i in axes(Q, 1)
+            @test sum(Q[i, :]) ≈ 0 atol = 10*eps()
+        end
+
+        # non-copying constructor
+        Q2 = TransitionRateMatrix!(A)
+        @test size(Q2) ≡ (n, n)
+        @test Base.IndexStyle(Q2) ≡ Base.IndexStyle(A)
+        for i in axes(Q2, 1)
+            @test sum(Q2[i, :]) ≈ 0 atol = 10*eps()
+        end
+
+        # FIXME tests commented out, cf
+        # https://github.com/tpapp/ContinuousTimeMarkov.jl/issues/2
+
+        # π = stationary_distribution(Q)
+        # π2 = stationary_distribution(Q2)
+        # @test π == π2           # exact equivalence
+        # @test sum(π) ≈ 1
+        # @test all(π .≥ 0)
+        # @test Q'*π ≈ zero(π) atol = 10*eps()
+    end
+end
