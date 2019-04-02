@@ -14,7 +14,7 @@ end
         @test size(Q) ≡ (n, n)
         @test Base.IndexStyle(Q) ≡ Base.IndexStyle(A)
         for i in axes(Q, 1)
-            @test sum(Q[i, :]) ≈ 0 atol = 10*eps()
+            @test sum(Q[i, :]) ≈ 0 atol = n*10*eps()
         end
 
         # non-copying constructor
@@ -22,7 +22,7 @@ end
         @test size(Q2) ≡ (n, n)
         @test Base.IndexStyle(Q2) ≡ Base.IndexStyle(A)
         for i in axes(Q2, 1)
-            @test sum(Q2[i, :]) ≈ 0 atol = 10*eps()
+            @test sum(Q2[i, :]) ≈ 0 atol = n*10*eps()
         end
 
         π = stationary_distribution(Q)
@@ -43,7 +43,7 @@ end
         @test size(Q) ≡ (n, n)
         @test Base.IndexStyle(Q) ≡ Base.IndexStyle(A)
         for i in axes(Q, 1)
-            @test sum(Q[i, :]) ≈ 0 atol = 10*eps()
+            @test sum(Q[i, :]) ≈ 0 atol = n*10*eps()
         end
 
         # non-copying constructor
@@ -51,7 +51,7 @@ end
         @test size(Q2) ≡ (n, n)
         @test Base.IndexStyle(Q2) ≡ Base.IndexStyle(A)
         for i in axes(Q2, 1)
-            @test sum(Q2[i, :]) ≈ 0 atol = 10*eps()
+            @test sum(Q2[i, :]) ≈ 0 atol = n*10*eps()
         end
 
         # FIXME tests commented out, cf
