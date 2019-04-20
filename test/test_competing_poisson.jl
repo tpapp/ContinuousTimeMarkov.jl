@@ -10,6 +10,8 @@
     @test cp.total_rate ≈ sum(r)
     @test cp.probabilities ≈ normalize(r, 1)
     @test cp.events == 2:4
+    @test Set(propertynames(cp)) == Set((:total_rate, :rates, :probabilities, :events))
+    @test Set(propertynames(cp, true)) == Set((propertynames(cp)..., :index_distribution))
 
     # empirical count
     c = zeros(Int, 4)           # event counts
