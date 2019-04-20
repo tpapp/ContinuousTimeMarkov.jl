@@ -1,8 +1,19 @@
 @testset "competing Poisson" begin
     r = [0.2, 0.7, 3.9]
     cp = CompetingPoisson(r; events = 2:4)
-    c = zeros(Int, 4)
-    d = zeros(10000)
+
+    # printing
+    @test repr(cp) == "Competing Poisson with total rate 4.8; P(2)=0.0417 P(3)=0.146 P(4)=0.812"
+
+    # properties
+    @test cp.rates ≈ r
+    @test cp.total_rate ≈ sum(r)
+    @test cp.probabilities ≈ normalize(r, 1)
+    @test cp.events == 2:4
+
+    # empirical count
+    c = zeros(Int, 4)           # event counts
+    d = zeros(10000)            # durations
     for i in axes(d, 1)
         x = rand(cp)
         d[i] = x.duration
@@ -10,7 +21,8 @@
     end
     e = ecdf(d)
     p = (1:9)./10
-    q = quantile.(Exponential(sum(r)), p)
+    q = quantile.(Exponential(1 / sum(r)), p)
+    @test mean(d) ≈ (1 ./ sum(r)) atol = 0.01
     @test all(isapprox.(e.(q), p; atol = 0.02))
     @test normalize(c, 1) ≈ vcat([0], normalize(r, 1)) atol = 0.02
 end
