@@ -8,7 +8,7 @@ using Distributions: Categorical, Exponential, probs
 using DocStringExtensions: SIGNATURES
 using Parameters: @unpack
 using LinearAlgebra: Diagonal, lu, normalize!
-using Random: AbstractRNG
+using Random: AbstractRNG, SamplerTrivial
 using SparseArrays: rowvals, nonzeros, nzrange, SparseMatrixCSC
 
 include("transition_matrices.jl")
