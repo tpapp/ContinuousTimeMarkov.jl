@@ -30,8 +30,8 @@ function CompetingPoisson(rates::AbstractVector; events = axis(rates, 1))
     CompetingPoisson(total_rate, Categorical(rates ./ total_rate), events)
 end
 
-function Base.rand(rng::AbstractRNG, cp::CompetingPoisson)
-    @unpack total_rate, index_distribution, events = cp
+function Base.rand(rng::AbstractRNG, sampler::SamplerTrivial{<:CompetingPoisson})
+    @unpack total_rate, index_distribution, events = sampler[]
     τ = rand(rng, Exponential(1 / total_rate))
     i = rand(rng, index_distribution)
     (duration = τ, event = events[i])
@@ -41,7 +41,6 @@ function Base.propertynames(cp::CompetingPoisson, private = false)
     public = (:total_rate, :rates, :probabilities, :events)
     private ? (:index_distribution, public...) : public
 end
-
 
 function Base.getproperty(cp::CompetingPoisson, key::Symbol)
     if key ≡ :probabilities
