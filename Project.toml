@@ -1,7 +1,7 @@
 name = "ContinuousTimeMarkov"
 uuid = "eab40c8d-01e0-5a99-916a-641eeda4da29"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 AlgebraResultTypes = "32e1273b-95f2-5990-a28e-8939b2e70f37"
