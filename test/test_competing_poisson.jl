@@ -17,7 +17,7 @@
     c = zeros(Int, 4)           # event counts
     d = zeros(10000)            # durations
     for i in axes(d, 1)
-        x = rand(cp)
+        x = @inferred rand(cp)
         d[i] = x.duration
         c[x.event] += 1
     end
