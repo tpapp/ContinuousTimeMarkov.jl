@@ -10,9 +10,9 @@ A small package for working with continuous-time Markov transition rate matrices
 
 Currently exposes the following functionality:
 
-- wrappers `TransitionRateMatrix` and `TransitionRateMatrix!` for creating transition rate matrices (square, nonnegative elements, rows sum to one),
+- wrappers `TransitionRateMatrix` and `TransitionRateMatrix!` for creating transition rate matrices (square, nonnegative elements, rows sum to one), and `steady_state` for calculating steady state distributions.
 
-- `steady_state` for calculating steady state distributions.
+- a `CompetingPoisson` distribution and random sampler for competing Poisson/exponential events.
 
 ## References
 
