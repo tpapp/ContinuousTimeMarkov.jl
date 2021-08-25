@@ -37,7 +37,7 @@ function Base.rand(rng::AbstractRNG, sampler::SamplerTrivial{<:CompetingPoisson}
     (duration = τ, event = events[i])
 end
 
-function Base.propertynames(cp::CompetingPoisson, private = false)
+function Base.propertynames(cp::CompetingPoisson, private::Bool = false)
     public = (:total_rate, :rates, :probabilities, :events)
     private ? (:index_distribution, public...) : public
 end

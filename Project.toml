@@ -19,3 +19,11 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "StatsBase"]
+
+[compat]
+julia = "1"
+AlgebraResultTypes = "0.2"
+ArgCheck = "2"
+Distributions = "0.25"
+DocStringExtensions = "0.8"
+Parameters = "0.12"
