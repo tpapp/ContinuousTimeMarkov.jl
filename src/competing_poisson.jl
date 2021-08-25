@@ -26,6 +26,8 @@ The distribution of `duration` is `Exponential(1/sum(rates))`, so this process c
 thought of as competing exponentials.
 """
 function CompetingPoisson(rates::AbstractVector; events = axis(rates, 1))
+    @assert !Base.has_offset_axes(rates) "Generalized indexing version not implemented."
+    @argcheck axes(rates, 1) == axes(events, 1)
     total_rate = sum(rates)
     CompetingPoisson(total_rate, Categorical(rates ./ total_rate), events)
 end
