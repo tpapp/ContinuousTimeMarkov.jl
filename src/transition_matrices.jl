@@ -123,6 +123,10 @@ function TransitionRateMatrix!(Q::AbstractMatrix)
     TransitionRateMatrix(Val{:trust}(), normalize_diagonal!(Q))
 end
 
+# NOTE: remove when we don't support ≤ v"1.7-"
+import LinearAlgebra
+const _LU_NoPivot = VERSION >= v"1.7.0-DEV.1188" ? LinearAlgebra.NoPivot : Val{false}
+
 """
 $(SIGNATURES)
 
@@ -131,7 +135,7 @@ Return the stationary distribution of a transition rate matrix as a vector.
 function stationary_distribution(m::TransitionRateMatrix)
     @unpack matrix = m
     @assert !Base.has_offset_axes(matrix) "Generalized indexing version not implemented."
-    LU = lu(matrix, Val(false); check = false) # not pivoted, allow singular
+    LU = lu(matrix, _LU_NoPivot(); check = false) # not pivoted, allow singular
     L = LU.L
     x = vcat(L[1:(end-1), 1:(end-1)]' \ -L[end, 1:(end-1)], 1)
     normalize!(x, 1)
