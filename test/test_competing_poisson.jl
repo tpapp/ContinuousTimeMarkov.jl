@@ -27,4 +27,6 @@
     @test mean(d) ≈ (1 ./ sum(r)) atol = 0.01
     @test all(isapprox.(e.(q), p; atol = 0.02))
     @test normalize(c, 1) ≈ vcat([0], normalize(r, 1)) atol = 0.02
+
+    @test CompetingPoisson(r) ≢ nothing # default events
 end

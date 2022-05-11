@@ -25,7 +25,7 @@ Varios properties are supported, see [`propertynames`](@ref).
 The distribution of `duration` is `Exponential(1/sum(rates))`, so this process can also be
 thought of as competing exponentials.
 """
-function CompetingPoisson(rates::AbstractVector; events = axis(rates, 1))
+function CompetingPoisson(rates::AbstractVector; events = axes(rates, 1))
     @assert !Base.has_offset_axes(rates) "Generalized indexing version not implemented."
     @argcheck axes(rates, 1) == axes(events, 1)
     total_rate = sum(rates)
