@@ -17,7 +17,7 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 AlgebraResultTypes = "0.2"
 ArgCheck = "2"
 Distributions = "0.25"
-DocStringExtensions = "0.8"
+DocStringExtensions = "0.8, 0.9"
 UnPack = "1"
 julia = "1"
 
